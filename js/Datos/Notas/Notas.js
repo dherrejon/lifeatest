@@ -112,6 +112,7 @@ function SetNota(data)
     {
         for(var k=0; k<data.Etiqueta.length; k++)
         {
+            data.Etiqueta[k].Show = true;
             nota.Etiqueta[k] = data.Etiqueta[k];
         }
     }

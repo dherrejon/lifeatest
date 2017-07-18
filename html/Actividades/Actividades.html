@@ -583,19 +583,19 @@
                          
                          <!-- Buscar Etiqueta -->
                          <div class="input-group">
-                            <input type="text" required class="entrada form-control" name="etiqueta" ng-model="buscarEtiqueta" placeholder="Etiqueta" ng-maxlength="300"  data-toggle="dropdown" id="nuevaEtiqueta" autocomplete="off"/>
+                            <input type="text" required class="entrada form-control" name="etiqueta" ng-model="buscarConcepto" placeholder="Etiqueta" ng-maxlength="300"  data-toggle="dropdown" id="nuevoConcepto" autocomplete="off"/>
                             <span class="input-group-btn">
-                                <a class="btn close cerrarModal"  ng-click="LimpiarBuscar(4)" type="button"><span class="fa fa-times-circle"></span></a>
+                                <a class="btn close cerrarModal"  ng-click="buscarConcepto = ''" type="button"><span class="fa fa-times-circle"></span></a>
                             </span>
                         </div>
                          
                          <!-- lista de etiquetas -->
-                         <div class="dropdown-menu modalAgregarDropdown" ng-show="buscarEtiqueta.length > 0">
+                         <div class="dropdown-menu modalAgregarDropdown" ng-show="buscarConcepto.length > 0">
                             
                             <table  class="table table-responsive">
                                 <tbody  style="cursor: pointer">
                                     <tr   ng-repeat="etiqueta in etiqueta | orderBy:'Nombre' | filter:BuscarEtiqueta" ng-show="etiqueta.show">
-                                      <td style="margin-left:10px; color:black" class="botonSeleccionar" ng-click="AgregarEtiqueta(etiqueta)">{{etiqueta.Nombre}}</td>
+                                      <td style="margin-left:10px; color:black" class="botonSeleccionar" ng-click="AgregarEtiqueta(etiqueta, true)">{{etiqueta.Nombre}}</td>
                                     </tr>
 
                                 </tbody>
@@ -613,7 +613,7 @@
                         <div ng-if="nuevaActividad.Etiqueta.length > 0">
                              <b>Etiquetas</b><br>
                             <!--lista de etiquetas Seleccionados -->
-                             <span ng-repeat="etiqueta in nuevaActividad.Etiqueta | orderBy:'Nombre'">
+                             <span ng-repeat="etiqueta in nuevaActividad.Etiqueta | orderBy:'Nombre'" ng-show="etiqueta.Show">
                                  <div class="btn-group" role="group" style="margin-bottom:8px">
                                   <a class="btn campoAgregado" ng-class="{contornoAzul:(etiqueta.EtiquetaId != '-1')}" style="font-size:10pt" ng-click="EditarEtiqueta(etiqueta)">{{etiqueta.Nombre}}</a>
                                   <a class="btn campoAgregadoQuitar" ng-class="{contornoAzul:(etiqueta.EtiquetaId != '-1')}" style="font-size:10pt" ng-click="QuitarEtiqueta(etiqueta)"><span class="fa fa-times-circle"></span></a>

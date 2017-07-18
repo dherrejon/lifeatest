@@ -633,7 +633,7 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
     
     $scope.BuscarEtiqueta = function(etiqueta)
     {
-        return $scope.FiltrarBuscarEtiqueta(etiqueta, $scope.buscarEtiqueta);
+        return $scope.FiltrarBuscarEtiqueta(etiqueta, $scope.buscarConcepto);
     };
     
     $scope.BuscarEtiquetaFiltro = function(etiqueta)
@@ -977,6 +977,7 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
             
             actividad.Etiqueta[k].EtiquetaId = data.Etiqueta[k].EtiquetaId;
             actividad.Etiqueta[k].Nombre = data.Etiqueta[k].Nombre;
+            actividad.Etiqueta[k].Show = true;
         }
         
         for(var k=0; k<data.Tema.length; k++)
@@ -1093,11 +1094,11 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
         $scope.buscarTema = "";
     };
     
-    $scope.AgregarNuevoTema = function()
+    $scope.AgregarNuevoTema = function(nuevo)
     {
-        if($scope.buscarTema.length > 0)
+        if(nuevo.length > 0)
         {
-            if(!$scope.ValidarTemaAgregado())
+            if(!$scope.ValidarTemaAgregado(nuevo))
             {
                 $scope.$apply();
                 return;    
@@ -1105,7 +1106,7 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
             else
             {
                 var tema = new TemaActividad();
-                tema.Tema = $scope.buscarTema;
+                tema.Tema = nuevo;
                 tema.TemaActividadId = "-1";
                 $scope.buscarTema = "";
                 
@@ -1115,13 +1116,13 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
         }
     };
     
-    $scope.ValidarTemaAgregado = function()
+    $scope.ValidarTemaAgregado = function(nuevo)
     {
-        if($rootScope.erTema.test($scope.buscarTema))
+        if($rootScope.erTema.test(nuevo))
         {
             for(var k=0; k<$scope.tema.length; k++)
             {
-                if($scope.tema[k].Tema.toLowerCase() == $scope.buscarTema.toLowerCase())
+                if($scope.tema[k].Tema.toLowerCase() == nuevo.toLowerCase())
                 {
                     if($scope.tema[k].show)
                     {
@@ -1141,7 +1142,7 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
 
             for(var k=0; k<$scope.nuevaActividad.Tema.length; k++)
             {
-                if($scope.nuevaActividad.Tema[k].Tema.toLowerCase() == $scope.buscarTema.toLowerCase())
+                if($scope.nuevaActividad.Tema[k].Tema.toLowerCase() == nuevo.toLowerCase())
                 {
                     $scope.mensajeError = [];
                     $scope.mensajeError[$scope.mensajeError.length] = "*Este tema ya fue agregado.";
@@ -1195,7 +1196,7 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
     {
         if(tema.TemaActividadId == "-1")
         {
-            $scope.buscarTema = tema.Tema;
+            $scope.buscarConcepto = tema.Tema;
             
             for(var k=0; k<$scope.nuevaActividad.Tema.length; k++)
             {
@@ -1211,11 +1212,12 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
     };
     
     //Etiqueta
-    $('#nuevaEtiqueta').keydown(function(e)
+   //etiqueta
+    $('#nuevoConcepto').keydown(function(e)
     {
         switch(e.which) {
             case 13:
-               $scope.AgregarNuevaEtiqueta();
+                $scope.IdentificarEtiqueta();
               break;
 
             default:
@@ -1224,75 +1226,151 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
         e.preventDefault(); // prevent the default action (scroll / move caret)
     });
     
-    $scope.AgregarEtiqueta = function(etiqueta)
+    $scope.AgregarEtiqueta = function(etiqueta, ver)
     {
+        etiqueta.Show = ver;
         $scope.nuevaActividad.Etiqueta.push(etiqueta);
         
         etiqueta.show = false;
-        $scope.buscarEtiqueta = "";
+        $scope.buscarConcepto = "";
     };
     
-    $scope.AgregarNuevaEtiqueta = function()
+    $scope.IdentificarEtiqueta = function()
     {
-        if($scope.buscarEtiqueta.length > 0)
+        if($rootScope.erEtiqueta.test($scope.buscarConcepto))
         {
-            if(!$scope.ValidarEtiquetaAgregado())
+            $scope.verEtiqueta  = true;
+            $scope.AgregarNuevaEtiqueta($scope.buscarConcepto);
+            $scope.buscarConcepto = "";
+        }
+        else if($rootScope.erTema.test($scope.buscarConcepto))
+        {
+            $scope.verEtiqueta  = false;
+            var tema = $scope.buscarConcepto;
+            $scope.AgregarNuevoTema(tema);
+            $scope.SepararEtiqueta(tema);
+            $scope.buscarConcepto = "";
+        }
+        else
+        {
+            $scope.mensajeError = [];
+            $scope.mensajeError[$scope.mensajeError.length] = "*Escribe una etiqueta válida.";
+            //$scope.buscarConcepto = "";
+            $('#mensajeNota').modal('toggle');
+            $scope.$apply();
+            return;
+        }
+    };
+    
+    $scope.SepararEtiqueta = function(etiqueta)
+    {        
+        etiqueta = etiqueta.split(" ");
+        
+        for(var k=0; k<etiqueta.length; k++)
+        {
+            $scope.AgregarNuevaEtiqueta(etiqueta[k]);
+        }
+
+    };
+    
+    $scope.AgregarNuevaEtiqueta = function(etiqueta)
+    {
+        if(etiqueta.length > 0)
+        {
+            if(!$scope.ValidarEtiquetaAgregado(etiqueta))
             {
                 $scope.$apply();
                 return;    
             }
             else
             {
-                if($rootScope.erEtiqueta.test($scope.buscarEtiqueta))
-                {
-                    $scope.EsNuevaEtiqueta();
-                }
-                else
-                {
-                    if(parseInt($scope.usuarioLogeado.EtiquetaMsn) <= 5)
-                    {
-                        $scope.CrearConcepto();  
-                    }
-                    else
-                    {
-                        $scope.EsNuevaEtiqueta();
-                    }
-                }
+                $scope.EsNuevaEtiqueta(etiqueta);
             }
         }
     };
     
-    $scope.EsNuevaEtiqueta = function()
+    
+    $scope.EsNuevaEtiqueta = function(nueva)
     {
         var etiqueta = new Etiqueta();
-        etiqueta.Nombre = $scope.buscarEtiqueta;
+        etiqueta.Nombre = nueva.charAt(0).toUpperCase() + nueva.substr(1).toLowerCase();
         etiqueta.EtiquetaId = "-1";
-        $scope.buscarEtiqueta = "";
+        etiqueta.Show = $scope.verEtiqueta;
+        
+        $scope.buscarConcepto = "";
 
         $scope.nuevaActividad.Etiqueta.push(etiqueta);
 
         $scope.$apply();
     };
     
-    $scope.ValidarEtiquetaAgregado = function()
+    /*document.getElementById('modalNota').onclick = function(e) 
     {
-        if($rootScope.erEtiqueta.test($scope.buscarEtiqueta) || $rootScope.erTema.test($scope.buscarEtiqueta))
+        if(!EditarConcepto)
+        {
+            if(!($(e.target).parents("#AgregarConcepto").size()))
+            { 
+                if($scope.buscarConcepto !== undefined)
+                {
+                    if($scope.buscarConcepto.length > 0)
+                    {
+                        $scope.EsTemaEtiqueta($scope.buscarConcepto);
+                        //$scope.$apply();
+                    }
+                }
+            }
+        }
+        else
+        {
+            EditarConcepto = false;
+        }
+        
+    };*/
+    
+    
+    /*$scope.EsTemaEtiqueta = function(texto)
+    {
+        if($rootScope.erEtiqueta.test(texto))
+        {
+            $scope.AgregarNuevaEtiqueta();
+        }
+        else if($rootScope.erTema.test(texto))
+        {
+           $scope.CrearConcepto();
+        }
+        else
+        {
+            $scope.mensajeError = [];
+            $scope.mensajeError[$scope.mensajeError.length] = "*Escribe una etiqueta o un tema válido.";
+            $('#mensajeNota').modal('toggle');
+            $scope.$apply();
+        }
+    };*/
+    
+    $scope.ValidarEtiquetaAgregado = function(concepto)
+    {
+        if($rootScope.erEtiqueta.test(concepto))
         {
             for(var k=0; k<$scope.etiqueta.length; k++)
             {
-                if($scope.etiqueta[k].Nombre.toLowerCase() == $scope.buscarEtiqueta.toLowerCase())
+                if($scope.etiqueta[k].Nombre.toLowerCase() == concepto.toLowerCase())
                 {
                     if($scope.etiqueta[k].show)
                     {
-                        $scope.AgregarEtiqueta($scope.etiqueta[k]);
+                        $scope.AgregarEtiqueta($scope.etiqueta[k], $scope.verEtiqueta);
                         return false;
                     }
                     else
                     {
+                        if($scope.verEtiqueta)
+                        {
+                            $scope.etiqueta[k].Show = true;
+                        }
+                        
                         $scope.mensajeError = [];
-                        $scope.mensajeError[$scope.mensajeError.length] = "*Esta etiqueta ya fue agregada.";
-                        $scope.buscarEtiqueta = "";
-                        $('#mensajeActividad').modal('toggle');
+                        //$scope.mensajeError[$scope.mensajeError.length] = "*Esta etiqueta ya fue agregada.";
+                        $scope.buscarConcepto = "";
+                        //$('#mensajeNota').modal('toggle');
                         return false;
                     }
                 }
@@ -1300,12 +1378,17 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
 
             for(var k=0; k<$scope.nuevaActividad.Etiqueta.length; k++)
             {
-                if($scope.nuevaActividad.Etiqueta[k].Nombre.toLowerCase() == $scope.buscarEtiqueta.toLowerCase())
+                if($scope.nuevaActividad.Etiqueta[k].Nombre.toLowerCase() == concepto.toLowerCase())
                 {
+                    if($scope.verEtiqueta)
+                    {
+                        $scope.nuevaActividad.Etiqueta[k].Show = true;
+                    }
+                    
                     $scope.mensajeError = [];
-                    $scope.mensajeError[$scope.mensajeError.length] = "*Esta etiqueta ya fue agregada.";
-                    $scope.buscarEtiqueta = "";
-                    $('#mensajeActividad').modal('toggle');
+                    //$scope.mensajeError[$scope.mensajeError.length] = "*Esta etiqueta ya fue agregada.";
+                    $scope.buscarConcepto = "";
+                    //$('#mensajeNota').modal('toggle');
                     return false;
                 }
             }
@@ -1314,27 +1397,14 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
         {
             $scope.mensajeError = [];
             $scope.mensajeError[$scope.mensajeError.length] = "*Escribe una etiqueta válida.";
-            $scope.buscarTema = "";
-            $('#mensajeActividad').modal('toggle');
+            $scope.buscarConcepto = "";
+            $('#mensajeNota').modal('toggle');
             
             return false;
         }
         
         
         return true;
-    };
-    
-    /*----------------- Crear concepto -------------*/
-    $scope.CrearConcepto = function()
-    {
-        $('#modalConcepto').modal('toggle');
-    };
-    
-    
-    $scope.TerminarDefinicionConcepto = function()
-    {
-        $scope.EsNuevaEtiqueta();
-        $("#modalConcepto").modal("toggle");
     };
     
     $scope.QuitarEtiqueta = function(etiqueta)
@@ -1364,9 +1434,10 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
     
     $scope.EditarEtiqueta = function(etiqueta)
     {
+        EditarConcepto = true;
         if(etiqueta.EtiquetaId == "-1")
         {
-            $scope.buscarEtiqueta = etiqueta.Nombre;
+            $scope.buscarConcepto = etiqueta.Nombre;
             
             for(var k=0; k<$scope.nuevaActividad.Etiqueta.length; k++)
             {
@@ -1377,7 +1448,7 @@ app.controller("ActividadesController", function($scope, $window, $http, $rootSc
                 }
             }
             
-            $("#nuevaEtiqueta").focus();
+            $("#nuevoConcepto").focus();
         }
     };
     

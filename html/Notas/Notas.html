@@ -487,7 +487,7 @@
 
                     <!-- Etiqueta -->
                     <div class="row" id="AgregarConcepto">
-
+                         
                          <div class="col-sm-12">
                             <label class="etiquetaNormal">Etiquetas</label><br>
                             
@@ -511,7 +511,7 @@
                                         
                                         <!-- etiquetas --> 
                                         <tr   ng-repeat="etiqueta in etiqueta | orderBy:'Nombre' | filter:BuscarEtiqueta" ng-show="etiqueta.show">
-                                          <td style="margin-left:10px; color:black" class="botonSeleccionar" ng-click="AgregarEtiqueta(etiqueta)">{{etiqueta.Nombre}}</td>
+                                          <td style="margin-left:10px; color:black" class="botonSeleccionar" ng-click="AgregarEtiqueta(etiqueta, true)">{{etiqueta.Nombre}}</td>
                                         </tr>
                                         
                                         <!-- temas -->
@@ -531,11 +531,45 @@
                     <div class="row" >
                     
                          <div class="col-sm-12">
+                          
+                          <div ng-show="etiquetaSugerida.length > 0">
+                            <div>
+                               <b >Etiquetas Sugeridas</b>
+                                <span class="btn-group pull-right">
+                                     <a class="btn btnOptDiarioDetalles boton" ng-click="AgregarTodaEtiquetaSugerida()"> <span class="fa fa-check-circle-o"></span></a>
+                                     <a class="btn btnOptDiarioDetalles boton" ng-click="etiquetaSugerida = []"> <span class="fa fa-times-circle-o"></span></a>
+                                 </span>
+                            </div>
+                            <br>
+                             
+                             <span ng-repeat="etiqueta in etiquetaSugerida track by $index">
+                                 <div class="btn-group" role="group" style="margin-bottom:8px">
+                                  <a class="btn campoAgregado"  style="font-size:10pt" ng-click="AgregarEtiquetaSugerida(etiqueta, $index)">{{etiqueta}}</a>
+                                  <a class="btn campoAgregadoQuitar" style="font-size:10pt" ng-click="etiquetaSugerida.splice($index, 1)"><span class="fa fa-times-circle"></span></a>
+                                </div>
+                             </span>
+                             <br> 
+                         </div>
+                         
+                         <div ng-show="temaSugerido.length > 0">
+                             <div>                         
+                                 <b >Temas Sugeridos</b><br><br>   
+                             </div> 
+                             <span ng-repeat="tema in temaSugerido track by $index">
+                                 <div class="btn-group" role="group" style="margin-bottom:8px">
+                                  <a class="btn campoAgregado"  style="font-size:10pt" ng-click="AgregarTemaSugerido(tema, $index)">{{tema}}</a>
+                                  <a class="btn campoAgregadoQuitar" style="font-size:10pt" ng-click="temaSugerido.splice(index, 1)"><span class="fa fa-times-circle"></span></a>
+                                </div>
+                             </span>
+                             <br>
+                             
+                         </div>
+                         <br>
                            
                            <!--lista de etiquetas Seleccionados -->
                             <div ng-show="nuevaNota.Etiqueta.length > 0" >
                                 <b>Etiquetas</b><br>
-                                 <span ng-repeat="etiqueta in nuevaNota.Etiqueta | orderBy:'Nombre'">
+                                 <span ng-repeat="etiqueta in nuevaNota.Etiqueta | orderBy:'Nombre'" ng-if="etiqueta.Show">
                                      <div class="btn-group" role="group" style="margin-bottom:8px">
                                       <a class="btn campoAgregado" ng-class="{contornoAzul:(etiqueta.EtiquetaId != '-1')}" style="font-size:10pt" ng-click="EditarEtiqueta(etiqueta)">{{etiqueta.Nombre}}</a>
                                       <a class="btn campoAgregadoQuitar" ng-class="{contornoAzul:(etiqueta.EtiquetaId != '-1')}" style="font-size:10pt" ng-click="QuitarEtiqueta(etiqueta)"><span class="fa fa-times-circle"></span></a>
@@ -594,8 +628,8 @@
                              <div class="input-group">
                                
                                 <div class="entrada2">
-                                    <input type="text" required class="entrada form-control" name="titulo" ng-model="nuevaNota.Titulo"  ng-maxlength="300" autocomplete="off"/>
-                                     <label class="">Título</label><br>
+                                    <input type="text" required class="entrada form-control" name="titulo" ng-model="nuevaNota.Titulo"  ng-maxlength="300" autocomplete="off" ng-blur="CrearEtiquetaSugerida()"/>
+                                    <label class="">Título</label><br>
                                  </div>
                                 <span class="input-group-btn">
                                     <a class="btn close cerrarModal"  ng-click="nuevaNota.Titulo = ''" type="button"><span class="fa fa-times-circle"></span></a>

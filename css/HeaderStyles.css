@@ -6,7 +6,7 @@
 .encabezadoUsuario /*Texto en el encabezado que indica el perfil del usuario*/
 {
     color: white !important;
-    background: #2076ED;
+    background: #B40404;
     
     padding-top: 10px;
     padding-bottom: 5px;
@@ -202,17 +202,17 @@ a:link
 
 .margenApp
 {
-    margin-left: 10px;
-    float: right;
+    margin-left: -15px;
+    float: left;
 }
 
 .menuApp
 {
-    right: 0;
-    left: auto;
+    right: auto;
+    left: 0;
 }
 
-@media (max-width: 767px)
+/*@media (max-width: 767px)
 {
     .margenApp
     {
@@ -225,4 +225,4 @@ a:link
       right: auto;
       left: 0;
     }
-}
+}*/

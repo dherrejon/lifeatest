@@ -75,6 +75,7 @@ function SetActividad(data)
     {
         for(var k=0; k<data.Etiqueta.length; k++)
         {
+            data.Etiqueta[k].Show = true;
             actividad.Etiqueta[k] = data.Etiqueta[k];
         }
     }

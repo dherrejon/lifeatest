@@ -577,6 +577,7 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
         for(var k=0; k<data.Etiqueta.length; k++)
         {
             diario.Etiqueta[k] = SetEtiqueta(data.Etiqueta[k]);
+            diario.Etiqueta[k].Show = true;
         }
         
         for(var k=0; k<data.Tema.length; k++)
@@ -731,7 +732,7 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
     {
         switch(e.which) {
             case 13:
-               $scope.AgregarNuevaEtiqueta();
+               $scope.IdentificarEtiqueta();
               break;
 
             default:
@@ -740,75 +741,108 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
         e.preventDefault(); // prevent the default action (scroll / move caret)
     });
     
-    $scope.AgregarEtiqueta = function(etiqueta)
+     $scope.AgregarEtiqueta = function(etiqueta, ver)
     {
+        etiqueta.Show = ver;
         $scope.nuevoDiario.Etiqueta.push(etiqueta);
         
         etiqueta.show = false;
-        $scope.buscarEtiqueta = "";
+        $scope.buscarConcepto = "";
     };
     
-    $scope.AgregarNuevaEtiqueta = function()
+    $scope.IdentificarEtiqueta = function()
     {
-        if($scope.buscarEtiqueta.length > 0)
+        if($rootScope.erEtiqueta.test($scope.buscarConcepto))
         {
-            if(!$scope.ValidarEtiquetaAgregado())
+            $scope.verEtiqueta  = true;
+            $scope.AgregarNuevaEtiqueta($scope.buscarConcepto);
+            $scope.buscarConcepto = "";
+        }
+        else if($rootScope.erTema.test($scope.buscarConcepto))
+        {
+            $scope.verEtiqueta  = false;
+            var tema = $scope.buscarConcepto;
+            $scope.AgregarNuevoTema(tema);
+            $scope.SepararEtiqueta(tema);
+            $scope.buscarConcepto = "";
+        }
+        else
+        {
+            $scope.mensajeError = [];
+            $scope.mensajeError[$scope.mensajeError.length] = "*Escribe una etiqueta válida.";
+            //$scope.buscarConcepto = "";
+            $('#mensajeDiario').modal('toggle');
+            $scope.$apply();
+            return;
+        }
+    };
+    
+    $scope.SepararEtiqueta = function(etiqueta)
+    {        
+        etiqueta = etiqueta.split(" ");
+        
+        for(var k=0; k<etiqueta.length; k++)
+        {
+            $scope.AgregarNuevaEtiqueta(etiqueta[k]);
+        }
+
+    };
+    
+    $scope.AgregarNuevaEtiqueta = function(etiqueta)
+    {
+        if(etiqueta.length > 0)
+        {
+            if(!$scope.ValidarEtiquetaAgregado(etiqueta))
             {
                 $scope.$apply();
                 return;    
             }
             else
             {
-                if($rootScope.erEtiqueta.test($scope.buscarEtiqueta))
-                {
-                    $scope.EsNuevaEtiqueta();
-                }
-                else
-                {
-                    if(parseInt($scope.usuarioLogeado.EtiquetaMsn) <= 5)
-                    {
-                        $scope.CrearConcepto();  
-                    }
-                    else
-                    {
-                        $scope.EsNuevaEtiqueta();
-                    }
-                }
+                $scope.EsNuevaEtiqueta(etiqueta);
             }
         }
     };
     
-    $scope.EsNuevaEtiqueta = function()
+    
+    $scope.EsNuevaEtiqueta = function(nueva)
     {
         var etiqueta = new Etiqueta();
-        etiqueta.Nombre = $scope.buscarEtiqueta;
+        etiqueta.Nombre = nueva.charAt(0).toUpperCase() + nueva.substr(1).toLowerCase();
         etiqueta.EtiquetaId = "-1";
-        $scope.buscarEtiqueta = "";
+        etiqueta.Show = $scope.verEtiqueta;
+        
+        $scope.buscarConcepto = "";
 
         $scope.nuevoDiario.Etiqueta.push(etiqueta);
 
         $scope.$apply();
     };
     
-    $scope.ValidarEtiquetaAgregado = function()
+    $scope.ValidarEtiquetaAgregado = function(concepto)
     {
-        if($rootScope.erEtiqueta.test($scope.buscarEtiqueta) || $rootScope.erTema.test($scope.buscarEtiqueta))
+        if($rootScope.erEtiqueta.test(concepto))
         {
             for(var k=0; k<$scope.etiqueta.length; k++)
             {
-                if($scope.etiqueta[k].Nombre.toLowerCase() == $scope.buscarEtiqueta.toLowerCase())
+                if($scope.etiqueta[k].Nombre.toLowerCase() == concepto.toLowerCase())
                 {
                     if($scope.etiqueta[k].show)
                     {
-                        $scope.AgregarEtiqueta($scope.etiqueta[k]);
+                        $scope.AgregarEtiqueta($scope.etiqueta[k], $scope.verEtiqueta);
                         return false;
                     }
                     else
                     {
+                        if($scope.verEtiqueta)
+                        {
+                            $scope.etiqueta[k].Show = true;
+                        }
+                        
                         $scope.mensajeError = [];
-                        $scope.mensajeError[$scope.mensajeError.length] = "*Esta etiqueta ya fue agregada.";
-                        $scope.buscarEtiqueta = "";
-                        $('#mensajeDiario').modal('toggle');
+                        //$scope.mensajeError[$scope.mensajeError.length] = "*Esta etiqueta ya fue agregada.";
+                        $scope.buscarConcepto = "";
+                        //$('#mensajeNota').modal('toggle');
                         return false;
                     }
                 }
@@ -816,12 +850,16 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
 
             for(var k=0; k<$scope.nuevoDiario.Etiqueta.length; k++)
             {
-                if($scope.nuevoDiario.Etiqueta[k].Nombre.toLowerCase() == $scope.buscarEtiqueta.toLowerCase())
+                if($scope.nuevoDiario.Etiqueta[k].Nombre.toLowerCase() == concepto.toLowerCase())
                 {
+                    if($scope.verEtiqueta)
+                    {
+                        $scope.nuevoDiario.Etiqueta[k].Show = true;
+                    }
                     $scope.mensajeError = [];
-                    $scope.mensajeError[$scope.mensajeError.length] = "*Esta etiqueta ya fue agregada.";
-                    $scope.buscarEtiqueta = "";
-                    $('#mensajeDiario').modal('toggle');
+                    //$scope.mensajeError[$scope.mensajeError.length] = "*Esta etiqueta ya fue agregada.";
+                    $scope.buscarConcepto = "";
+                    //$('#mensajeNota').modal('toggle');
                     return false;
                 }
             }
@@ -830,8 +868,8 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
         {
             $scope.mensajeError = [];
             $scope.mensajeError[$scope.mensajeError.length] = "*Escribe una etiqueta válida.";
-            $scope.buscarEtiqueta = "";
-            $('#mensajeDiario').modal('toggle');
+            $scope.buscarConcepto = "";
+            $('#mensajeNota').modal('toggle');
             
             return false;
         }
@@ -930,7 +968,7 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
     
     $scope.BuscarEtiqueta = function(etiqueta)
     {
-        return $scope.FiltrarBuscarEtiqueta(etiqueta, $scope.buscarEtiqueta);
+        return $scope.FiltrarBuscarEtiqueta(etiqueta, $scope.buscarConcepto);
     };
     
     
@@ -956,19 +994,19 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
         $scope.buscarTema = "";
     };
     
-    $scope.AgregarNuevoTema = function()
+    $scope.AgregarNuevoTema = function(nuevo)
     {
-        if($scope.buscarTema.length > 0)
+        if(nuevo.length > 0)
         {
-            if(!$scope.ValidarTemaAgregado())
+            if(!$scope.ValidarTemaAgregado(nuevo))
             {
                 $scope.$apply();
                 return;    
             }
             else
             {
-                var tema = new TemaActividad();
-                tema.Tema = $scope.buscarTema;
+                var tema = new TemaActividad(nuevo);
+                tema.Tema = nuevo;
                 tema.TemaActividadId = "-1";
                 $scope.buscarTema = "";
                 
@@ -978,13 +1016,13 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
         }
     };
     
-    $scope.ValidarTemaAgregado = function()
+    $scope.ValidarTemaAgregado = function(nuevo)
     {
-        if($rootScope.erTema.test($scope.buscarTema))
+        if($rootScope.erTema.test(nuevo))
         {
             for(var k=0; k<$scope.tema.length; k++)
             {
-                if($scope.tema[k].Tema.toLowerCase() == $scope.buscarTema.toLowerCase())
+                if($scope.tema[k].Tema.toLowerCase() == nuevo.toLowerCase())
                 {
                     if($scope.tema[k].show)
                     {
@@ -994,9 +1032,9 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
                     else
                     {
                         $scope.mensajeError = [];
-                        $scope.mensajeError[$scope.mensajeError.length] = "*Este tema ya fue agregado.";
+                        //$scope.mensajeError[$scope.mensajeError.length] = "*Este tema ya fue agregado.";
                         $scope.buscarTema = "";
-                        $('#mensajeDiario').modal('toggle');
+                        //$('#mensajeDiario').modal('toggle');
                         return false;
                     }
                 }
@@ -1004,12 +1042,12 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
 
             for(var k=0; k<$scope.nuevoDiario.Tema.length; k++)
             {
-                if($scope.nuevoDiario.Tema[k].Tema.toLowerCase() == $scope.buscarTema.toLowerCase())
+                if($scope.nuevoDiario.Tema[k].Tema.toLowerCase() == nuevo.toLowerCase())
                 {
                     $scope.mensajeError = [];
-                    $scope.mensajeError[$scope.mensajeError.length] = "*Este tema ya fue agregado.";
+                    //$scope.mensajeError[$scope.mensajeError.length] = "*Este tema ya fue agregado.";
                     $scope.buscarTema = "";
-                    $('#mensajeDiario').modal('toggle');
+                    //$('#mensajeDiario').modal('toggle');
                     return false;
                 }
             }
@@ -1058,7 +1096,7 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
     {
         if(tema.TemaActividadId == "-1")
         {
-            $scope.buscarTema = tema.Tema;
+            $scope.buscarConcepto = tema.Tema;
             
             for(var k=0; k<$scope.nuevoDiario.Tema.length; k++)
             {
@@ -1069,7 +1107,7 @@ app.controller("DiarioController", function($scope, $window, $http, $rootScope, 
                 }
             }
             
-            $("#nuevoTema").focus();
+            $("#nuevaEtiqueta").focus();
         }
     };
     
