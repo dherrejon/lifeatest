@@ -112,8 +112,16 @@ function SetNota(data)
     {
         for(var k=0; k<data.Etiqueta.length; k++)
         {
-            data.Etiqueta[k].Show = true;
             nota.Etiqueta[k] = data.Etiqueta[k];
+            
+            if(data.Etiqueta[k].Visible == "1")
+            {
+                data.Etiqueta[k].Visible = true;
+            }
+            else if(data.Etiqueta[k].Visible == "0")
+            {
+                data.Etiqueta[k].Visible = false;
+            }
         }
     }
     
@@ -197,7 +205,6 @@ function EditarNota($http, CONFIG, $q, nota)
 {
     var q = $q.defer();
     
-    
     var fd = new FormData();
     
     for(var k=0; k<nota.ImagenSrc.length; k++)
@@ -239,10 +246,10 @@ function EditarNota($http, CONFIG, $q, nota)
             }
             else
             {
-                q.resolve(data);
+                q.resolve([{Estatus: "Error"}]);
             }  
         }).error(function(data, status){
-            q.resolve(status);
+            q.resolve([{Estatus: status}]);
 
      }); 
     return q.promise;

@@ -70,7 +70,7 @@ function GetNotasPorId()
     {
         for($k=0; $k<$numNota; $k++)
         {
-            $sql = "SELECT EtiquetaId, Nombre FROM EtiquetaNotaVista WHERE NotaId = ".$nota[$k]->NotaId;
+            $sql = "SELECT EtiquetaId, Nombre, Visible FROM EtiquetaNotaVista WHERE NotaId = ".$nota[$k]->NotaId;
             
             try 
             {
@@ -532,13 +532,20 @@ function AgregarNota()
             }
         }
         
-        $sql = "INSERT INTO EtiquetaPorNota (NotaId, EtiquetaId) VALUES";
+        $sql = "INSERT INTO EtiquetaPorNota (NotaId, EtiquetaId, Visible) VALUES";
         
         
         /*Etiqueta de la actividad*/
         for($k=0; $k<$countEtiqueta; $k++)
         {
-            $sql .= " (".$notaId.", ".$nota->Etiqueta[$k]->EtiquetaId."),";
+            if($nota->Etiqueta[$k]->Visible)
+            {
+                $sql .= " (".$notaId.", ".$nota->Etiqueta[$k]->EtiquetaId.", true),";
+            }
+            else
+            {
+                $sql .= " (".$notaId.", ".$nota->Etiqueta[$k]->EtiquetaId.", false),";
+            }
         }
 
         $sql = rtrim($sql,",");
@@ -885,13 +892,20 @@ function EditarNota()
             }
         }
         
-        $sql = "INSERT INTO EtiquetaPorNota (NotaId, EtiquetaId) VALUES";
+        $sql = "INSERT INTO EtiquetaPorNota (NotaId, EtiquetaId, Visible) VALUES";
         
         
         /*Etiqueta del diario*/
         for($k=0; $k<$countEtiqueta; $k++)
         {
-            $sql .= " (".$nota->NotaId.", ".$nota->Etiqueta[$k]->EtiquetaId."),";
+            if($nota->Etiqueta[$k]->Visible)
+            {
+                $sql .= " (".$nota->NotaId.", ".$nota->Etiqueta[$k]->EtiquetaId.", true),";
+            }
+            else
+            {
+                $sql .= " (".$nota->NotaId.", ".$nota->Etiqueta[$k]->EtiquetaId.", false),";
+            }
         }
 
         $sql = rtrim($sql,",");
@@ -908,8 +922,8 @@ function EditarNota()
         } 
         catch(PDOException $e) 
         {
-            echo '[{"Estatus": "Fallo"}]';
-            echo $e;
+            echo '[{"Estatus": "Fallo"}, {"Etiqueta":'.json_encode($nota->Etiqueta).'}]';
+            //echo $e;
             $db->rollBack();
             $app->status(409);
             $app->stop();

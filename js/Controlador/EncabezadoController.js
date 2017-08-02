@@ -251,7 +251,7 @@ app.controller("EncabezadoControlador", function($scope, $window, $http, $rootSc
     /*---------------- Ir a pagina Principal ------------------*/
     $rootScope.IrPaginaPrincipal = function()
     {
-        if($scope.usuario !== undefined || $scope.usuario !== null)
+        if($scope.usuario !== undefined && $scope.usuario !== null)
         {
             //console.log($scope.usuario);
             if($scope.usuario.Aplicacion.length === 0 || $scope.usuario.Aplicacion == "Home")
@@ -304,9 +304,7 @@ app.controller("EncabezadoControlador", function($scope, $window, $http, $rootSc
             {
                 $scope.permisoUsuario = true;
                 break;
-            }
-            
-            
+            }   
         }
         
         if(!($scope.usuario.Aplicacion  === null ||  $scope.usuario.Aplicacion  === undefined))
